@@ -3,8 +3,10 @@ package ru.simplefuzzy;
 import java.util.Vector;
 
 /**
- * Created by Тимофей on 04.05.2015.
+ * Copyright (c) 2015 Timofey Klyubin, The MIT License
  */
+
+
 public class FuzzyRule {
     public final static int FUZZY_NOT = 1;
     public final static int FUZZY_VERY = 2;

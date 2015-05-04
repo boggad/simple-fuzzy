@@ -1,7 +1,7 @@
 package ru.simplefuzzy;
 
 /**
- * Created by Тимофей on 04.05.2015.
+ * Copyright (c) 2015 Timofey Klyubin, The MIT License
  */
 public class FuzzyFunc {
     private double entry, startMax, endMax, exit;

@@ -1,8 +1,9 @@
 package ru.simplefuzzy;
 
 /**
- * Created by Тимофей on 04.05.2015.
+ * Copyright (c) 2015 Timofey Klyubin, The MIT License
  */
+
 public class FuzzyTerm {
     private FuzzyFunc function;
     public double value;;
