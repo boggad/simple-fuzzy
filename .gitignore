@@ -12,6 +12,5 @@
 hs_err_pid*
 
 #IntelliJ workspace file
-.idea\workspace.xml
 .idea/workspace.xml
 .idea/
