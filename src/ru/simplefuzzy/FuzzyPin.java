@@ -18,8 +18,29 @@ import java.util.Vector;
  * copies or substantial portions of the Software.
  */
 
+/**
+ * Defines a set of terms.
+ *
+ * <p>
+ *     <code>FuzzyPin</code> describes either one input signal or one output signal. Pin is a set of terms associated
+ *     with this pin. For example, if you need to open a shutter depending on air temperature and time, you would have
+ *     one <code>FuzzyPin</code> as input for air pressure, one <code>FuzzyPin</code> as input for time and one
+ *     <code>FuzzyPin</code> as output for shutter's angle.
+ * </p>
+ * @author Timofey
+ * @see ru.simplefuzzy.FuzzyTerm
+ * @see ru.simplefuzzy.Fuzzy
+ * @see java.util.Vector
+ * @since 0.1
+ * @version 0.1
+ */
+
 public class FuzzyPin {
     public Vector<FuzzyTerm> terms;
+
+    /**
+     * Stores input value
+     */
     public double value;
 
     public FuzzyPin(Vector<FuzzyTerm> terms) {

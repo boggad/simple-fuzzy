@@ -25,8 +25,8 @@ package ru.simplefuzzy;
  * </p>
  *
  * @author Timofey
- * @see ru.simplefuzzy.Fuzzy {@link ru.simplefuzzy.Fuzzy}
- * @see ru.simplefuzzy.FuzzyFunc {@link ru.simplefuzzy.FuzzyTerm}
+ * @see ru.simplefuzzy.Fuzzy
+ * @see ru.simplefuzzy.FuzzyFunc
  * @since 0.1
  * @version 0.1
  */
@@ -57,7 +57,7 @@ public class FuzzyTerm {
         this.function = function;
         this.value = value;
     }
-    
+
     public FuzzyFunc getFunction() {
         return function;
     }

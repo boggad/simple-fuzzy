@@ -25,8 +25,8 @@ package ru.simplefuzzy;
  * </p>
  *
  * @author Timofey
- * @see ru.simplefuzzy.Fuzzy {@link ru.simplefuzzy.Fuzzy}
- * @see ru.simplefuzzy.FuzzyTerm {@link ru.simplefuzzy.FuzzyTerm}
+ * @see ru.simplefuzzy.Fuzzy
+ * @see ru.simplefuzzy.FuzzyTerm
  * @since 0.1
  * @version 0.1
  */
