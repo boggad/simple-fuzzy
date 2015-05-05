@@ -12,5 +12,8 @@
 hs_err_pid*
 
 #IntelliJ workspace file
-workspace.xml
 .idea/workspace.xml
+.idea/
+.idea/dictionaries/
+.idea/misc.xml
+.idea/dictionaries/.xml
