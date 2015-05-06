@@ -1,6 +1,6 @@
 package ru.simplefuzzy;
 
-import java.util.Vector;
+import java.util.HashMap;
 
 /*
  * The MIT License (MIT)
@@ -20,6 +20,7 @@ import java.util.Vector;
 
 
 public class FuzzyRule {
+    public final static int FUZZY_NORMAL = 0;
     public final static int FUZZY_NOT = 1;
     public final static int FUZZY_VERY = 2;
     public final static int FUZZY_QUITE = 3; //более или менее
@@ -27,49 +28,50 @@ public class FuzzyRule {
     public final static int FUZZY_AND = 5;
 
     private int ruleType;
-    public Vector<FuzzyTerm> terms;
+    private HashMap<FuzzyTerm, Integer> terms;
     public FuzzyTerm outTerm;
     public double out;
+    private double maxValue, minValue;
+
+    public void addTerm(FuzzyTerm term, int logicType) {
+        if (logicType < 0 || logicType > 3) logicType = 0;
+        terms.put(term, logicType);
+    }
 
     public FuzzyRule(int ruleType) {
         this.ruleType = ruleType;
-        this.terms = new Vector<FuzzyTerm>();
+        this.terms = new HashMap<FuzzyTerm, Integer>();
     }
 
     public void activate() {
         double r = 0;
+        terms.forEach((FuzzyTerm key, Integer value) -> {
+            switch (value) {
+                case FUZZY_NORMAL: break;
+                case FUZZY_NOT: key.value = 1.0 - key.value; break;
+                case FUZZY_VERY: key.value = Math.pow(key.value, 2.0); break;
+                case FUZZY_QUITE: key.value = Math.sqrt(key.value);break;
+                default: break;
+            }
+        });
+        maxValue = terms.keySet().iterator().next().value;
+        minValue = maxValue;
+        terms.forEach((FuzzyTerm key, Integer value) -> {
+            if (key.value > maxValue) maxValue = key.value;
+            if (key.value < minValue) minValue = key.value;
+        });
+
         switch (ruleType) {
-            case FUZZY_NOT: {
-                r = 1.0 - terms.firstElement().value;
-                break;
-            }
-            case FUZZY_VERY: {
-                r = Math.pow(terms.firstElement().value, 2.0);
-                break;
-            }
-            case FUZZY_QUITE: {
-                r = Math.sqrt(terms.firstElement().value);
-                break;
-            }
             case FUZZY_OR: {
-                terms.sort((FuzzyTerm a1, FuzzyTerm a2) -> {
-                    if (a1.value == a2.value) return 0;
-                    if (a1.value > a2.value) return -1;
-                    return 1;
-                });
-                r = terms.firstElement().value;
+                r = maxValue;
                 break;
             }
             case FUZZY_AND: {
-                terms.sort((FuzzyTerm a1, FuzzyTerm a2) -> {
-                    if (a1.value == a2.value) return 0;
-                    if (a1.value > a2.value) return 1;
-                    return -1;
-                });
-                r = terms.firstElement().value;
+                r = minValue;
                 break;
             }
-            default: r = 0;
+            default:
+                r = 0;
         }
         out = r;
     }
