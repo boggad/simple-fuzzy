@@ -28,24 +28,27 @@ public class FuzzyRule {
     public final static int FUZZY_AND = 5;
 
     private int ruleType;
-    private HashMap<FuzzyTerm, Integer> terms;
+    private HashMap<FuzzyTerm, Integer> addTerm;
     public FuzzyTerm outTerm;
     public double out;
     private double maxValue, minValue;
 
     public void addTerm(FuzzyTerm term, int logicType) {
         if (logicType < 0 || logicType > 3) logicType = 0;
-        terms.put(term, logicType);
+        addTerm.put(term, logicType);
+    }
+    public void addTerm(FuzzyTerm term) {
+        addTerm.put(term, FUZZY_NORMAL);
     }
 
     public FuzzyRule(int ruleType) {
         this.ruleType = ruleType;
-        this.terms = new HashMap<FuzzyTerm, Integer>();
+        this.addTerm = new HashMap<FuzzyTerm, Integer>();
     }
 
     public void activate() {
         double r = 0;
-        terms.forEach((FuzzyTerm key, Integer value) -> {
+        addTerm.forEach((FuzzyTerm key, Integer value) -> {
             switch (value) {
                 case FUZZY_NORMAL: break;
                 case FUZZY_NOT: key.value = 1.0 - key.value; break;
@@ -54,9 +57,9 @@ public class FuzzyRule {
                 default: break;
             }
         });
-        maxValue = terms.keySet().iterator().next().value;
+        maxValue = addTerm.keySet().iterator().next().value;
         minValue = maxValue;
-        terms.forEach((FuzzyTerm key, Integer value) -> {
+        addTerm.forEach((FuzzyTerm key, Integer value) -> {
             if (key.value > maxValue) maxValue = key.value;
             if (key.value < minValue) minValue = key.value;
         });

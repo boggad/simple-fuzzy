@@ -16,7 +16,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
+import ru.simplefuzzy.*;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -30,10 +33,17 @@ public class Main extends Application {
     Fuzzy fuzzy;
     FuzzyPin pressure, delta, hand_angle;
     static Timer main;
-    double baseDelta;
+    Double baseDelta;
     Random rand;
     int i;
     double a;
+    public Text fuzzyPress;
+    public Text fuzzyDelta;
+    FuzzyTerm low;
+    FuzzyTerm lessNormal;
+    FuzzyTerm normal;
+    FuzzyTerm moreNormal;
+    FuzzyTerm high;
 
     private void drawUi() {
         // задвижка воды
@@ -162,6 +172,8 @@ public class Main extends Application {
         tfPressure.setLayoutX(150);
         tfPressure.setLayoutY(250);
 
+
+
         Button btnPressure = new Button("Set Pressure");
         root.getChildren().add(btnPressure);
         btnPressure.setLayoutX(50);
@@ -184,7 +196,7 @@ public class Main extends Application {
         btnDelta.setLayoutY(310);
         btnDelta.setOnAction((ActionEvent event) -> {
                 double val = Double.valueOf(tfDelta.getText());
-                synchronized (delta) {
+                synchronized (baseDelta) {
                     baseDelta = val;
                 }
         });
@@ -193,29 +205,39 @@ public class Main extends Application {
 
     private void makeFuzzy(){
         pressure = new FuzzyPin();
-        FuzzyTerm veryLow = new FuzzyTerm(new FuzzyFunc(0.2, 2.5, 0.3));
-        FuzzyTerm low = new FuzzyTerm(new FuzzyFunc(0.4, 2.5, 0.85));
-        FuzzyTerm normal = new FuzzyTerm(new FuzzyFunc(0.6, 2.5, 1.65));
-        FuzzyTerm high = new FuzzyTerm(new FuzzyFunc(0.6, 2.5, 2.55));
-        pressure.terms.add(veryLow);
+        low = new FuzzyTerm(new FuzzyFunc(0.4, 3.5, 0.5));
+        lessNormal = new FuzzyTerm(new FuzzyFunc(0.25, 3.5, 1.15));
+        normal = new FuzzyTerm(new FuzzyFunc(0.4, 3.5, 1.7));
+        moreNormal = new FuzzyTerm(new FuzzyFunc(0.22, 3.5, 2.35));
+        high = new FuzzyTerm(new FuzzyFunc(0.35, 3.5, 2.9));
         pressure.terms.add(low);
+        pressure.terms.add(lessNormal);
         pressure.terms.add(normal);
+        pressure.terms.add(moreNormal);
         pressure.terms.add(high);
 
         delta = new FuzzyPin();
-        FuzzyTerm down = new FuzzyTerm(new FuzzyFunc(0.75, 2.5, -1.25));
-        FuzzyTerm equal = new FuzzyTerm(new FuzzyFunc(0.7, 2.5, 0));
-        FuzzyTerm up = new FuzzyTerm(new FuzzyFunc(0.75, 2.5, 5, 1.25));
+        FuzzyTerm doubleDown = new FuzzyTerm(new FuzzyFunc(0.7, 3.5, -1.56));
+        FuzzyTerm down = new FuzzyTerm(new FuzzyFunc(0.33, 3.5, -0.54));
+        FuzzyTerm equal = new FuzzyTerm(new FuzzyFunc(0.2, 3.0, 0.0));
+        FuzzyTerm up = new FuzzyTerm(new FuzzyFunc(0.33, 3.5, 0.54));
+        FuzzyTerm doubleUp = new FuzzyTerm(new FuzzyFunc(0.7, 3.5, 1.56));
+        delta.terms.add(doubleDown);
         delta.terms.add(down);
         delta.terms.add(equal);
         delta.terms.add(up);
+        delta.terms.add(doubleUp);
 
         hand_angle = new FuzzyPin();
-        FuzzyTerm air = new FuzzyTerm(new FuzzyFunc(15, 1.8, -30));
-        FuzzyTerm nothing = new FuzzyTerm(new FuzzyFunc(15, 1.8, 0));
-        FuzzyTerm water = new FuzzyTerm(new FuzzyFunc(15, 1.8, 30));
+        FuzzyTerm air = new FuzzyTerm(new FuzzyFunc(14.6, 3.5, -33.3));
+        FuzzyTerm littleAir = new FuzzyTerm(new FuzzyFunc(5.5, 3.5, -14));
+        FuzzyTerm nothing = new FuzzyTerm(new FuzzyFunc(8.0, 3.5, 0.0));
+        FuzzyTerm littleWater = new FuzzyTerm(new FuzzyFunc(5.5, 3.5, 14));
+        FuzzyTerm water = new FuzzyTerm(new FuzzyFunc(14.6, 3.5, 33.3));
         hand_angle.terms.add(air);
+        hand_angle.terms.add(littleAir);
         hand_angle.terms.add(nothing);
+        hand_angle.terms.add(littleWater);
         hand_angle.terms.add(water);
 
         fuzzy = new Fuzzy(hand_angle);
@@ -223,64 +245,129 @@ public class Main extends Application {
         fuzzy.addInput(delta);
 
         FuzzyRule r1 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r1.addTerm(low);
+        r1.addTerm(doubleDown);
         r1.outTerm = water;
-        r1.terms.add(veryLow);
-        r1.terms.add(down);
 
         FuzzyRule r2 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r2.addTerm(low);
+        r2.addTerm(down);
         r2.outTerm = water;
-        r2.terms.add(veryLow);
-        r2.terms.add(equal);
 
         FuzzyRule r3 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r3.outTerm = water;
-        r3.terms.add(veryLow);
-        r3.terms.add(up);
+        r3.addTerm(low);
+        r3.addTerm(equal);
+        r3.outTerm = littleWater;
 
         FuzzyRule r4 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r4.outTerm = water;
-        r4.terms.add(low);
-        r4.terms.add(down);
+        r4.addTerm(low);
+        r4.addTerm(up);
+        r4.outTerm = littleWater;
 
         FuzzyRule r5 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r5.outTerm = water;
-        r5.terms.add(low);
-        r5.terms.add(equal);
+        r5.addTerm(low);
+        r5.addTerm(doubleUp);
+        r5.outTerm = littleWater;
 
         FuzzyRule r6 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r6.outTerm = water;
-        r6.terms.add(low);
-        r6.terms.add(up);
+        r6.addTerm(lessNormal);
+        r6.addTerm(doubleDown);
+        r6.outTerm = littleWater;
 
         FuzzyRule r7 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r7.outTerm = nothing;
-        r7.terms.add(normal);
-        r7.terms.add(down);
+        r7.addTerm(lessNormal);
+        r7.addTerm(down);
+        r7.outTerm = littleWater;
 
         FuzzyRule r8 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r8.outTerm = nothing;
-        r8.terms.add(normal);
-        r8.terms.add(equal);
+        r8.addTerm(lessNormal);
+        r8.addTerm(equal);
+        r8.outTerm = littleWater; //?little normal
 
         FuzzyRule r9 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r9.addTerm(lessNormal);
+        r9.addTerm(up);
         r9.outTerm = nothing;
-        r9.terms.add(normal);
-        r9.terms.add(up);
 
         FuzzyRule r10 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r10.addTerm(lessNormal);
+        r10.addTerm(doubleUp);
         r10.outTerm = nothing;
-        r10.terms.add(high);
-        r10.terms.add(down);
 
         FuzzyRule r11 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r11.outTerm = air;
-        r11.terms.add(high);
-        r11.terms.add(equal);
+        r11.addTerm(normal);
+        r11.addTerm(doubleDown);
+        r11.outTerm = nothing;
 
         FuzzyRule r12 = new FuzzyRule(FuzzyRule.FUZZY_AND);
-        r12.outTerm = air;
-        r12.terms.add(high);
-        r12.terms.add(up);
+        r12.addTerm(normal);
+        r12.addTerm(down);
+        r12.outTerm = nothing;
+
+        FuzzyRule r13 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r13.addTerm(normal);
+        r13.addTerm(equal);
+        r13.outTerm = nothing;
+
+        FuzzyRule r14 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r14.addTerm(normal);
+        r14.addTerm(up);
+        r14.outTerm = nothing;
+
+        FuzzyRule r15 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r15.addTerm(normal);
+        r15.addTerm(doubleUp);
+        r15.outTerm = nothing;
+
+        FuzzyRule r16 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r16.addTerm(moreNormal);
+        r16.addTerm(doubleDown);
+        r16.outTerm = nothing;
+
+        FuzzyRule r17 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r17.addTerm(moreNormal);
+        r17.addTerm(down);
+        r17.outTerm = nothing;
+
+        FuzzyRule r18 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r18.addTerm(moreNormal);
+        r18.addTerm(equal);
+        r18.outTerm = nothing;
+
+        FuzzyRule r19 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r19.addTerm(moreNormal);
+        r19.addTerm(up);
+        r19.outTerm = littleAir; //?? or air
+
+        FuzzyRule r20 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r20.addTerm(moreNormal);
+        r20.addTerm(doubleUp);
+        r20.outTerm = air;
+
+        FuzzyRule r21 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r21.addTerm(high);
+        r21.addTerm(doubleDown);
+        r21.outTerm = nothing;
+
+        FuzzyRule r22 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r22.addTerm(high);
+        r22.addTerm(down);
+        r22.outTerm = littleAir;
+
+        FuzzyRule r23 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r23.addTerm(high);
+        r23.addTerm(equal);
+        r23.outTerm = littleAir;
+
+        FuzzyRule r24 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r24.addTerm(high);
+        r24.addTerm(up);
+        r24.outTerm = air;
+
+        FuzzyRule r25 = new FuzzyRule(FuzzyRule.FUZZY_AND);
+        r25.addTerm(high);
+        r25.addTerm(doubleUp);
+        r25.outTerm = air;
 
         fuzzy.addRule(r1);
         fuzzy.addRule(r2);
@@ -293,7 +380,20 @@ public class Main extends Application {
         fuzzy.addRule(r9);
         fuzzy.addRule(r10);
         fuzzy.addRule(r11);
-        fuzzy.addRule(r12);
+        fuzzy.addRule(r10);
+        fuzzy.addRule(r13);
+        fuzzy.addRule(r14);
+        fuzzy.addRule(r15);
+        fuzzy.addRule(r16);
+        fuzzy.addRule(r17);
+        fuzzy.addRule(r18);
+        fuzzy.addRule(r19);
+        fuzzy.addRule(r20);
+        fuzzy.addRule(r21);
+        fuzzy.addRule(r22);
+        fuzzy.addRule(r23);
+        fuzzy.addRule(r24);
+        fuzzy.addRule(r25);
     }
 
     private void rotateBar(double bar) {
@@ -341,14 +441,27 @@ public class Main extends Application {
         primaryStage.setTitle("JavaFX");
         root = new Group();
         drawUi();
+        System.out.println(fuzzyPress);
         drawSet();
+
+        Text fuzzyPress = new Text("test");
+        root.getChildren().add(fuzzyPress);
+        fuzzyPress.setLayoutX(320);
+        fuzzyPress.setLayoutY(300);
+
+        Text fuzzyDelta = new Text("test");
+        root.getChildren().add(fuzzyDelta);
+        fuzzyDelta.setLayoutX(320);
+        fuzzyDelta.setLayoutY(350);
+        NumberFormat formatter = new DecimalFormat("#0.000");
+
+        System.out.println(fuzzyPress);
         Scene scene = new Scene(root, 800, 400);
         primaryStage.setScene(scene);
         primaryStage.show();
-
         makeFuzzy();
         rand = new Random();
-        baseDelta = -1;
+        baseDelta = 0.0;
         pressure.value = 1.2;
         delta.value = baseDelta;
         i = 1;
@@ -360,8 +473,13 @@ public class Main extends Application {
                 Platform.runLater(() -> {
 
                     rotateBar(pressure.value);
-                    if (i >= 30) {
+                    if (i >= 15) {
                         a = fuzzy.output();
+                        if (fuzzyPress != null) {
+                            fuzzyPress.setText("low: " + formatter.format(low.value) + "; lessNorm: " + formatter.format(lessNormal.value) +
+                                    "; norm: " + formatter.format(normal.value) + "; moreNorm: " +
+                                    formatter.format(moreNormal.value) + "; high: " + formatter.format(high.value));
+                        }
                         if (a == 0) {
                             rotateWater(a);
                             rotateAir(a);
@@ -378,8 +496,8 @@ public class Main extends Application {
                         //System.out.println("Pressure: "+pressure.value+"; delta: "+delta.value+"; angle: "+a);
                     }
                     i++;
-                    double dwP = 0; //дельда давления при открытом кране воды
-                    double daP = 0; //дельда давления при открытом кране воздуха
+                    double dwP = 0; //дельта давления при открытом кране воды
+                    double daP = 0; //дельта давления при открытом кране воздуха
                     double time = 600;
                     if (a > 0)
                         dwP = a/3;
